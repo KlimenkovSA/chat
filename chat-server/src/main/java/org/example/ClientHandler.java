@@ -7,13 +7,10 @@ import java.net.Socket;
 
 public class ClientHandler {
     private Socket socket;
-
     private Server server;
     private DataInputStream in;
     private DataOutputStream out;
-
     private String username;
-
     private static int userCount = 0;
 
     public String getUsername() {

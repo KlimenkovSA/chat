@@ -7,12 +7,9 @@ import java.net.Socket;
 
 public class Network implements AutoCloseable {
     private Socket socket;
-
     private DataInputStream in;
     private DataOutputStream out;
-
     private Callback callback;
-
     public void setCallback(Callback callback) {
         this.callback = callback;
     }
