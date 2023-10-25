@@ -51,7 +51,6 @@ public class Main extends JFrame implements Runnable {
                 }
         );
 
-
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(400, 500);
         setVisible(true);
