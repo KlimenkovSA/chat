@@ -5,18 +5,25 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Server {
     private int port;
     private List<ClientHandler> clients;
+    private final AuthenticationProvider authenticationProvider;
 
-    public Server(int port) {
+    public AuthenticationProvider getAuthenticationProvider() {
+        return authenticationProvider;
+    }
+
+    public Server(int port, AuthenticationProvider authenticationProvider) {
         this.port = port;
         clients = new ArrayList<>();
+        this.authenticationProvider = authenticationProvider;
     }
 
     public void start() {
-        try(ServerSocket serverSocket = new ServerSocket(port)) {
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
             while (true) {
                 System.out.println("Сервер запущен на порту " + port);
                 Socket socket = serverSocket.accept();
@@ -39,8 +46,45 @@ public class Server {
         }
     }
 
-    public void unsubscribe(ClientHandler clientHandler) {
+    public synchronized void unsubscribe(ClientHandler clientHandler) {
         clients.remove(clientHandler);
+        System.out.println("Клиент: " + clientHandler.getUsername() + " вышел из чата");
         broadcastMessage("Клиент: " + clientHandler.getUsername() + " вышел из чата");
     }
+
+    public synchronized List<String> getUserList() {
+//        var listUsers = new ArrayList<String>();
+//        for (ClientHandler client : clients) {
+//            listUsers.add(client.getUsername());
+//        }
+//        return listUsers;
+        return clients.stream()
+                .map(ClientHandler::getUsername)
+//                .map(client -> client.getUsername())
+                .collect(Collectors.toList());
+    }
+    public synchronized void sendMessageToUser(String user, String message) {
+        for (ClientHandler client : clients) {
+            System.out.println("User:" + client.getUsername());
+            if (client.getUsername().equals(user)){
+                System.out.println("message to: "+client.getUsername());
+                client.sendMessage(message);
+            }
+        }
+    }
+
+    public synchronized boolean kickUser(String user, String whoDoes) {
+        System.out.println("Отключает пользователь: "+ whoDoes);
+        for (ClientHandler client : clients) {
+            System.out.println("User:" + client.getUsername());
+            if (client.getUsername().equals(user)){
+                System.out.println("kick user: "+client.getUsername());
+                client.sendMessage("Вы удалены из чата админом " + whoDoes);
+                client.disconnect();
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
